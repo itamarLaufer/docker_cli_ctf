@@ -49,8 +49,11 @@ class StopKillLevel(Level):
         import signal
         print(self.instructions)
         signal.signal(self.signal, self.receiveSignal)
-        while True:
-            time.sleep(1)
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
 
 
 class EnvVarLevel(Level):
@@ -116,3 +119,10 @@ class ExecLevel(Level):
         print(f'The code is hidden on the container the file is called {self.CODE_FILE_NAME}')
         while True:
             time.sleep(1)
+
+
+class FinishAllLevel(Level):
+    def __call__(self, *args, **kwargs):
+        print("Congratulations! you have completed all the levels!")
+        print("Now your truly master the docker cli")
+        print("Good luck in your further way in your qust leading to docker mastery!")
