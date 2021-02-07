@@ -3,22 +3,6 @@ class Level:
         self.id = id
         self.pass_code = pass_code
         self.instructions = instructions
-        self.levels = []
-
-    @property
-    def next_level(self):
-        try:
-            return self.levels[self.id]
-        except IndexError:
-            return None
-
-    @property
-    def next_instructions(self):
-        return None if not self.next_level else self.next_level.instructions
-
-    def print_next_instructions(self):
-        if self.next_instructions:
-            print(self.next_instructions)
 
     def __call__(self):
         pass
@@ -27,21 +11,22 @@ class Level:
 class RunLevel(Level):
     def __call__(self, *args, **kwargs):
         print(f"You passed level{self.id}! the code is {self.pass_code}")
-        self.print_next_instructions()
+        print("From now on, when running the image for the next level the container should run with the last level code as its command")
 
 
 class RunWithLastCodeLevel(Level):
     def __call__(self, *args, **kwargs):
         print(f"You passed level{self.id}! the code is {self.pass_code}")
-        self.print_next_instructions()
 
 
 class InteractiveLevel(Level):
     def __call__(self, *args, **kwargs):
-        name = input("Hi there! What's your name?")
+        try:
+            name = input("Hi there! What's your name?\n")
+        except EOFError:
+            return
         if name:
             print(f"Well done {name}! You have just passed level{self.id}! the code is {self.pass_code}")
-            self.print_next_instructions()
 
 
 class PsLevel(Level):
@@ -57,10 +42,7 @@ class StopKillLevel(Level):
         self.signal = signal
 
     def receiveSignal(self, signalNumber, frame):
-        output = f"You completed level{self.id} the code is {self.pass_code}"
-        if self.next_instructions:
-            output += f"\n{self.next_instructions}"
-        raise SystemExit(output)
+        raise SystemExit(f"You completed level{self.id} the code is {self.pass_code}")
 
     def __call__(self, *args, **kwargs):
         import time
@@ -87,15 +69,50 @@ class ServerLevel(Level):
     def __call__(self, *args, **kwargs):
         import os
         import sys
+
+        print("Running http server")
         os.system(rf'cd /opt/code/http_server && {sys.executable} -m http.server 7979')
 
 
 class VolumeLevel(Level):
+    NAME_FILE_NAME = 'name.txt'
+    CODE_FILE_NAME = 'code.txt'
+    DIR_PATH = '/var/cool_staff/'
+
     def __call__(self, *args, **kwargs):
         try:
-            with open('/var/cool_staff/name.txt') as f:
+            with open(f'{self.DIR_PATH}{self.NAME_FILE_NAME}', 'r') as f:
                 name = f.read()
-            with open('/var/cool_staff/code.txt') as f:
-                f.write(f'You finished the level! the code is {self.pass_code}')
-        except Exception:
-            raise
+                if name == '':
+                    print(f"{self.NAME_FILE_NAME} must contain at least one character!")
+                    return
+            with open(f'{self.DIR_PATH}{self.CODE_FILE_NAME}', 'r') as f:
+                content = f.read()
+                if content != '':
+                    print(f'{self.CODE_FILE_NAME} must be empty!')
+                    return
+            with open(f'{self.DIR_PATH}{self.CODE_FILE_NAME}', 'w') as f:
+                f.write(f'Great job {name}, You finished  level{self.id}! the code is {self.pass_code}')
+        except FileNotFoundError as error:
+            print(error)
+
+
+class ExecLevel(Level):
+    CODE_FILE_PATH = '/etc/logs/other/.secret/'
+    CODE_FILE_NAME = 'code.secret'
+    CODE_FULL_NAME = f'{CODE_FILE_PATH}{CODE_FILE_NAME}'
+
+    def _store_code(self):
+        import os
+
+        os.makedirs(os.path.dirname(self.CODE_FULL_NAME), exist_ok=True)
+        with open(self.CODE_FULL_NAME, "w") as f:
+            f.write(f"You have found the hidden code! You completed level{self.id} the code is {self.pass_code}")
+
+    def __call__(self, *args, **kwargs):
+        import time
+
+        self._store_code()
+        print(f'The code is hidden on the container the file is called {self.CODE_FILE_NAME}')
+        while True:
+            time.sleep(1)
