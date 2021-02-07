@@ -97,3 +97,5 @@ class VolumeLevel(Level):
                 name = f.read()
             with open('/var/cool_staff/code.txt') as f:
                 f.write(f'You finished the level! the code is {self.pass_code}')
+        except Exception:
+            raise
