@@ -88,3 +88,12 @@ class ServerLevel(Level):
         import os
         import sys
         os.system(rf'cd /opt/code/http_server && {sys.executable} -m http.server 7979')
+
+
+class VolumeLevel(Level):
+    def __call__(self, *args, **kwargs):
+        try:
+            with open('/var/cool_staff/name.txt') as f:
+                name = f.read()
+            with open('/var/cool_staff/code.txt') as f:
+                f.write(f'You finished the level! the code is {self.pass_code}')

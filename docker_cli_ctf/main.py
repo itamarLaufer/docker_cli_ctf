@@ -1,7 +1,7 @@
 import sys
 import signal
 
-from level import InteractiveLevel, PsLevel, RunLevel, RunWithLastCodeLevel, StopKillLevel, EnvVarLevel, ServerLevel
+from level import InteractiveLevel, PsLevel, RunLevel, RunWithLastCodeLevel, StopKillLevel, EnvVarLevel, ServerLevel, VolumeLevel
 
 
 def wrong_level():
@@ -18,6 +18,7 @@ LEVELS = (
     # StopKillLevel(6, 'imalIve!', signal.SIGHUP, "Can you kill me with SIGHUP?"),
     EnvVarLevel(7, 'GloBAlWARMMINg'),
     ServerLevel(8, 'TelePOrTEr'),
+    VolumeLevel(9, 'MountEverESt'),
           )
 
 for level in LEVELS:
